@@ -25,14 +25,14 @@ class Player
 {
 public:
     string name;
-    char mark;
-    Player(string name, char mark)
+    int mark;
+    Player(string name, int mark)
     {
         this->name=name;
         this->mark=mark;
     }
  
-        char getMark()
+        int getMark()
         {
             return mark;
         }
@@ -54,10 +54,16 @@ class Board : public Fl_Widget{
 	bool gameend,display;
 	char* scoreLabel; 
 	Fl_Box *scoreBox;
+	Player *human;//=new Player("MARCO", 25);
+	Player *computer;//=new Player("KASIA",50);
 	
 	public:
-	
-	Board():Fl_Widget (0,0,xmaxtiles*tilesize,
+	Player *currentPlayer;
+    char **board;
+    int size;
+    static const int nWin=5; //number of piecies to win (2,3,4..ecc)
+
+	Board(int n):Fl_Widget (0,0,xmaxtiles*tilesize,
 			ymaxtiles*tilesize,"timer")
 	{
 	    gameend = 0 ;display=0;
@@ -65,7 +71,16 @@ class Board : public Fl_Widget{
 		for (int i = 0 ; i < xmaxtiles ; i ++ )
 		for (int j = 0 ;  j < ymaxtiles ; j ++ )
 		occup[i][j] = bgcolor;
-			
+		size=n;
+        board=new char *[size];
+        for( int i = 0 ; i < size ; i++ )
+            board[i]= new char[size];
+        for(int i=0;i<size;i++)
+            for(int k=0;k<size;k++)
+                board[i][k]='_';
+        human=new Player("CHINNI", 25);
+		computer=new Player("ROBO",67);
+		currentPlayer=human;	
 	}
 	void setScoreBox(Fl_Box** sb)
 	{
@@ -79,90 +94,8 @@ class Board : public Fl_Widget{
 		//redraw();
 		Fl::repeat_timeout (timeout,timeoutAction,this);
 	}
-	
-	void draw()
-	{
-		for (int i=0; i<xmaxtiles;i++)
-		for (int j=0; j<ymaxtiles;j++)
-			fl_draw_box(FL_BORDER_BOX,i*tilesize,j*tilesize,
-				tilesize,tilesize,occup[i][j]);
-				
-			if(!gameend)
-			{
-				/*for (int i = 0 ; i < 4 ; i++)
-				{
-					fl_draw_box(FL_BORDER_BOX,p->tileSet[i].x*tilesize,p->tileSet[i].y*tilesize,
-							tilesize,tilesize,p->color);
-				}
-			
-				/*if(moveDown()){}
-				else 
-				{
-					transferTiles(p->tileSet,p->color);
-					deleteRow();
-					//p = new ActivePiece (this);
-					if (!freepiece (p->tileSet))gameend=1;
-				}*/	
-			
-			}
-			else 
-			{
-                  if (!display){
-					cout<<"Game Ends"<<endl;
-					cout<<"Score: "<<score <<endl;
-					display=1;
-				  }
-			}
-		}
-		int handle(int e){
-		if (e==8) // means it's a keyboard event
-			switch (Fl::event_key()) { 
-				case 65361 : moveLeft(); break;
-				case 65362 : rotate(0);break;
-				case 32 : fullDown(); break; 
-				case 65363 : moveRight(); break;
-				case 65364 : rotate(1); break;
-			}				
-	}
-};
- 
-class Boarding
-{
-    
-    public:
-    Player *currentPlayer;
-    char **board;
-    int size;
-    static const int nWin=5; //number of piecies to win (2,3,4..ecc)
- 
-        Boarding(int n, Player *beginningPlayer)
-        {
-            size=n;
-            board=new char *[size];
-            for( int i = 0 ; i < size ; i++ )
-                board[i]= new char[size];
-            for(int i=0;i<size;i++)
-                for(int k=0;k<size;k++)
-                    board[i][k]='_';
-            currentPlayer=beginningPlayer;
-        }
- 
-        void printBoard()
-        {
-            cout<<" \t";
-            for(int i=0;i<size;i++)
-               cout<<i+1<<"\t";
-            cout<<"\n";
-            for(int i=0;i<size;i++)
-            {
-                cout<<i+1<<"\t";
-                for(int k=0;k<size;k++)
-                    cout<<board[i][k]<<"\t";
-                cout<<"\n\n";
-            }
-        }
- 
-        bool checkPosition(int row, int col)
+
+	bool checkPosition(int row, int col)
         {
             if(row>=size || row<0 || col>=size || col <0)
                return false; 
@@ -172,17 +105,43 @@ class Boarding
                 return false;
         }
  
-        bool updateBoard(int r, int c)
+    bool updateBoard(int r, int c)
         {
-            if(checkPosition(r,c))
+        	//cout<<"hello "<<r<<" "<<c<<endl;
+            if((this->checkPosition(r,c)))
+            {
                 board[r][c]=currentPlayer->getMark();
+                //cout<<currentPlayer->getMark()<<endl;
+                fl_draw_box(FL_BORDER_BOX, r*tilesize, c*tilesize,
+							tilesize,tilesize,currentPlayer->getMark());
+                //cout<<"hello "<<r<<" "<<c<<endl;
+           		bool winner=this->checkWinner();
+
+		        if(!winner)
+		        {
+		          //cout<<"cool "<<currentPlayer->getName()<<endl;
+		          if(this->currentPlayer==human)
+		          {
+		          	//cout<<"HI"<<endl;
+		            this->currentPlayer=computer;
+		          }
+		          else
+		            this->currentPlayer=human;
+		        }
+		        else
+		        {
+		        	cout<<currentPlayer->getName()<<" wins!!!"<<endl;
+		        	exit(0);
+		        }
+            }
+
             else
                 return false;
             return true;
         }
         
         
-        bool checkWinner()
+    bool checkWinner()
         {
            int playerCount, r, c, x,y;
             // Check Orizontal --OK
@@ -248,8 +207,89 @@ class Boarding
                 return false;
                            
         }
- 
+	
+	void draw()
+	{
+		for (int i=0; i<xmaxtiles;i++)
+		for (int j=0; j<ymaxtiles;j++)
+			fl_draw_box(FL_BORDER_BOX,i*tilesize,j*tilesize,
+				tilesize,tilesize,occup[i][j]);
+				
+			if(!gameend)
+			{
+				/*for (int i = 0 ; i < 4 ; i++)
+				{
+					fl_draw_box(FL_BORDER_BOX,p->tileSet[i].x*tilesize,p->tileSet[i].y*tilesize,
+							tilesize,tilesize,p->color);
+				}
+			
+				/*if(moveDown()){}
+				else 
+				{
+					transferTiles(p->tileSet,p->color);
+					deleteRow();
+					//p = new ActivePiece (this);
+					if (!freepiece (p->tileSet))gameend=1;
+				}*/	
+			
+			}
+			else 
+			{
+                  if (!display){
+					cout<<"Game Ends"<<endl;
+					cout<<"Score: "<<score <<endl;
+					display=1;
+				  }
+			}
+		}
+	int handle(int e){
+		int x;
+		int y;
+		if ( e == 2 )
+		{
+			x = Fl::event_x();
+			y = Fl::event_y();
+			this->updateBoard(x/50,y/50);
+		}
 
+	}
+};
+ 
+class Boarding
+{
+    
+    public:
+    Player *currentPlayer;
+    char **board;
+    int size;
+    static const int nWin=5; //number of piecies to win (2,3,4..ecc)
+ 
+        Boarding(int n, Player *beginningPlayer)
+        {
+            size=n;
+            board=new char *[size];
+            for( int i = 0 ; i < size ; i++ )
+                board[i]= new char[size];
+            for(int i=0;i<size;i++)
+                for(int k=0;k<size;k++)
+                    board[i][k]='_';
+            currentPlayer=beginningPlayer;
+        }
+ 
+        void printBoard()
+        {
+            cout<<" \t";
+            for(int i=0;i<size;i++)
+               cout<<i+1<<"\t";
+            cout<<"\n";
+            for(int i=0;i<size;i++)
+            {
+                cout<<i+1<<"\t";
+                for(int k=0;k<size;k++)
+                    cout<<board[i][k]<<"\t";
+                cout<<"\n\n";
+            }
+        }
 
 };
 
@@ -260,12 +300,12 @@ void timeoutAction(void *p)
 
 int main(int argc, char *argv[])
 {
-    int row, column;
-    bool control=true;
-    bool winner;
-    Player *human=new Player("MARCO", 'H');
-    Player *computer=new Player("KASIA",'C');
-    Boarding *board=new Boarding(9,human);
+    //int row, column;
+    //bool control=true;
+    //bool winner;
+    //Player *human=new Player("MARCO", 25);
+    //Player *computer=new Player("KASIA",50);
+    //Boarding *board=new Boarding(9,human);
     
     /*WELCOME PAGE
     cout<<"*****************************************\n";
@@ -281,7 +321,7 @@ int main(int argc, char *argv[])
     
     Fl_Window *window = new Fl_Window (950,950,"GOMOKU");
 	window->color(56);
-	Board *b = new Board();
+	Board *b = new Board(19);
 	  /*   Fl_Box *scorebox = new Fl_Box(tilesize*xmaxtiles+10,50,180,200,"Score: 0\0");
 	scorebox->box(FL_UP_BOX);
         scorebox->labelfont(FL_BOLD+FL_ITALIC);
@@ -290,12 +330,9 @@ int main(int argc, char *argv[])
 	window->end(); 
    	window->show();
 	Fl::add_timeout(0.1, timeoutAction,b);
-	int a=event_x();
-	int c=event_y();
-	cout<<a<<" "<<b<<endl
     return(Fl::run());
     
-    do
+    /*do
     {
         do
         {
@@ -324,5 +361,5 @@ int main(int argc, char *argv[])
     return 1;
     
     //problems with devcpp
-    cin>>row;
+    cin>>row;*/
 }
