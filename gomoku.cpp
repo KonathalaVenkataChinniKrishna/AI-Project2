@@ -108,12 +108,29 @@ class Board : public Fl_Widget{
     bool updateBoard(int r, int c)
         {
         	//cout<<"hello "<<r<<" "<<c<<endl;
+        	int p=r, q=c;
+        	r = r/50;
+        	c = c/50;
+        	int x, y;
+        	if(p-50*r > 25 && q-50*c <= 25)
+        	{
+        		r++;
+        	}
+        	if(p-50*r > 25 && q-50*c > 25)
+        	{
+        		r++;
+        		c++;
+        	}
+        	if(p-50*r <= 25 && q-50*c > 25)
+        	{
+        		c++;
+        	}
             if((this->checkPosition(r,c)))
             {
                 board[r][c]=currentPlayer->getMark();
                 //cout<<currentPlayer->getMark()<<endl;
-                fl_draw_box(FL_BORDER_BOX, r*tilesize, c*tilesize,
-							tilesize,tilesize,currentPlayer->getMark());
+                fl_draw_box(FL_OVAL_BOX, ((r)*tilesize)-10, ((c)*tilesize)-10,
+							20,20,currentPlayer->getMark());
                 //cout<<"hello "<<r<<" "<<c<<endl;
            		bool winner=this->checkWinner();
 
@@ -249,7 +266,7 @@ class Board : public Fl_Widget{
 		{
 			x = Fl::event_x();
 			y = Fl::event_y();
-			this->updateBoard(x/50,y/50);
+			this->updateBoard(x,y);
 		}
 
 	}
