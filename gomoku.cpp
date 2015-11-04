@@ -18,7 +18,7 @@ using namespace std;
 static const int tilesize = 50;
 static const int xmaxtiles= 19;
 static const int ymaxtiles= 19;
-static const int bgcolor=66;
+static const int bgcolor=25;
 static const double timeout=0.3;
  
 class Player
@@ -78,7 +78,7 @@ class Board : public Fl_Widget{
         for(int i=0;i<size;i++)
             for(int k=0;k<size;k++)
                 board[i][k]='_';
-        human=new Player("CHINNI", 25);
+        human=new Player("CHINNI", 112);
 		computer=new Player("ROBO",67);
 		currentPlayer=human;	
 	}
