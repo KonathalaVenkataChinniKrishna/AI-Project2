@@ -4,4 +4,5 @@ GOMOKU
 To run this file 
 fltk-config --compile gomoku.cpp
 
-NOTE: ignore that syscall warning
+Player 1: CHINNI(red)
+Player 2: ROBO(Green)
