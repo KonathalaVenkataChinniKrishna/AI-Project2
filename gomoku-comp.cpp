@@ -1826,9 +1826,9 @@ int main() {
 	else if (game_mode == 3) {
 		cout << "Mode 3 choosen." << endl;
 
-		Fl::run();
-		Fl::unlock();
-		cout<<"kjh";
+		//Fl::run();
+		//Fl::unlock();
+		//cout<<"kjh";
 		mode_three(board_size, time_limit, matching_row);
 	}
 	else
